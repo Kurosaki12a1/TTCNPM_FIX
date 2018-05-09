@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Group19-PicsHub.iml" filepath="$PROJECT_DIR$/Group19-PicsHub.iml" />
+      <module fileurl="file://D:\University\HK172\TTCNPM\ttcnpm-172-19\final\trunk\Group19-PicsHub\Group19-PicsHub.iml" filepath="D:\University\HK172\TTCNPM\ttcnpm-172-19\final\trunk\Group19-PicsHub\Group19-PicsHub.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+    </modules>
+  </component>
+</project>

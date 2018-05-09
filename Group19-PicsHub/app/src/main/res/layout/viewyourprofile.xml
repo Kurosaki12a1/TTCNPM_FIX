@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/avatar_user"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@string/avatar_user"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/unknow_user" />
+
+    <Button
+        android:id="@+id/change_avatar_button"
+        android:layout_width="121dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="36dp"
+        android:text="@string/change_avatar_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/avatar_user" />
+
+    <TextView
+        android:id="@+id/AccountName"
+        android:layout_width="100dp"
+        android:layout_height="30dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="@string/user_name"
+        app:layout_constraintLeft_toRightOf="@id/avatar_user"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="137dp" />
+
+    <TextView
+        android:id="@+id/UserName"
+        android:layout_width="120dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@null"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/AccountName"
+        app:layout_constraintTop_toTopOf="parent"
+        android:gravity="start"
+        />
+
+    <TextView
+        android:id="@+id/email_user"
+        android:layout_width="100dp"
+        android:layout_height="30dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="@string/email_user"
+        app:layout_constraintStart_toEndOf="@+id/avatar_user"
+        app:layout_constraintTop_toBottomOf="@+id/AccountName" />
+
+
+    <TextView
+        android:id="@+id/email"
+        android:layout_width="120dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@null"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/email_user"
+        app:layout_constraintTop_toBottomOf="@+id/UserName" />
+
+    <TextView
+        android:id="@+id/follow_number"
+        android:layout_width="100dp"
+        android:layout_height="30dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="8dp"
+        android:text="@null"
+        app:layout_constraintStart_toEndOf="@+id/avatar_user"
+        app:layout_constraintTop_toBottomOf="@+id/email_user"
+        android:gravity="start"/>
+
+    <TextView
+        android:id="@+id/textfollow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/follow"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/follow_number"
+        app:layout_constraintStart_toStartOf="@+id/follow_number"
+        app:layout_constraintTop_toBottomOf="@+id/follow_number" />
+
+    <TextView
+        android:id="@+id/post_number"
+        android:layout_width="100dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@null"
+        app:layout_constraintStart_toEndOf="@+id/follow_number"
+        app:layout_constraintTop_toBottomOf="@+id/email" />
+
+    <TextView
+        android:id="@+id/textpost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/post"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/post_number"
+        app:layout_constraintStart_toStartOf="@+id/post_number"
+        app:layout_constraintTop_toBottomOf="@+id/post_number" />
+
+    <Button
+        android:id="@+id/account_setting_button"
+        android:layout_width="121dp"
+        android:layout_height="60dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="164dp"
+        android:text="@string/setting_profile"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/change_avatar_button"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ListView
+        android:id="@+id/list_image"
+        android:layout_width="fill_parent"
+        android:layout_height="336dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+</android.support.constraint.ConstraintLayout>

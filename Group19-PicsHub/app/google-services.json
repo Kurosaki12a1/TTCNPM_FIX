@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "614054518360",
+    "firebase_url": "https://picshub-6652d.firebaseio.com",
+    "project_id": "picshub-6652d",
+    "storage_bucket": "picshub-6652d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:614054518360:android:88f19b568efc1ed7",
+        "android_client_info": {
+          "package_name": "com.bku.picshub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "614054518360-lfc26ue8msfjeadaid8rivkdb3mdsm9t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bku.picshub",
+            "certificate_hash": "3e3f60003db7cf41ae19437de3a0f432b181d5f0"
+          }
+        },
+        {
+          "client_id": "614054518360-jjimc5k6cdq5m0cors8058s6s6ek709i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bku.picshub",
+            "certificate_hash": "749c6b3a142a88c38065ec33b89c47ebfaea3d61"
+          }
+        },
+        {
+          "client_id": "614054518360-3dsvosnptbgk8jtdba4ok2vknhfs95sc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWYismqEx1cr8IZYEwwaHPR5Q8fK3fErg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "614054518360-3dsvosnptbgk8jtdba4ok2vknhfs95sc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
