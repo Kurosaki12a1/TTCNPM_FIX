@@ -117,7 +117,7 @@ public class SignupActivity extends AppCompatActivity {
                                     String userId=auth.getCurrentUser().getUid().toString();
 
                                     //use image unknown_user
-                                    String unknown_user_url="https://firebasestorage.googleapis.com/v0/b/picshub.appspot.com/o/unknow_user.jpg?alt=media&token=4e6a8e69-850e-430c-b565-91f1194fa604";
+                                    String unknown_user_url="https://firebasestorage.googleapis.com/v0/b/picshub-6652d.appspot.com/o/ic_display_name.png?alt=media&token=819a6fdb-9f37-4019-b261-7427442a9c9c";
                                     UserInfo userInfo=new UserInfo(email,username,unknown_user_url,"","","");
 
                                     //bo vao database

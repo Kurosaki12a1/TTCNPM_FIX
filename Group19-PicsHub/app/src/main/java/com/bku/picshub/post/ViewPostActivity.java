@@ -1,10 +1,16 @@
 package com.bku.picshub.post;
 
+import android.app.DownloadManager;
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -13,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
@@ -21,15 +28,17 @@ import android.widget.TextView;
 import com.bku.picshub.BottomNavigationViewHelper;
 import com.bku.picshub.MainScreenActivity;
 import com.bku.picshub.R;
+import com.bku.picshub.info.CommentInfo;
 import com.bku.picshub.info.ImageUploadInfo;
-import com.bku.picshub.info.PostInfo;
+import com.bku.picshub.info.LikedPostInfo;
 import com.bku.picshub.info.UserInfo;
-import com.bku.picshub.likedpost.LikedThisPostFragment;
+import com.bku.picshub.likedpost.LikedThisPostPopUp;
 import com.bku.picshub.viewimage.CreateData;
 import com.bku.picshub.viewimage.listener.OnClickShowImageListener;
 import com.bku.picshub.viewimage.model.Profile;
 import com.bku.picshub.viewimage.view.adapter.ProfileAdapter;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -39,8 +48,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Welcome on 3/22/2018.
@@ -55,9 +70,11 @@ public class ViewPostActivity extends AppCompatActivity implements OnClickShowIm
     public static final String Image_Post="Image_Of_Post_Database";
     public static final String Liked_Post="All_Liked_Post_Database";
     public static final String All_Image="All_Image_Uploads_Database";
+    public static final String Comment_Database ="All_Comment_Info_Database";
     private TextView   mUsername, mTimestamp, mLikes,mComments;
-    private EditText mCaption;
-    private ImageView mPostImage, mBackArrow, mEllipses, mHeartRed, mHeartWhite, mProfileImage, mComment;
+    private EditText mCaption ,mNewComment;
+    private Button mWriteComment;
+    private ImageView  mBackArrow, mEllipses, mHeartRed, mHeartWhite, mProfileImage, mComment;
     private ProfileAdapter mProfileAdapter;
     private List<Profile> mProfileList;
     FirebaseAuth mAuth;
@@ -70,19 +87,23 @@ public class ViewPostActivity extends AppCompatActivity implements OnClickShowIm
 
     // Creating RecyclerView.
     RecyclerView recyclerView;
+    RecyclerView oldComment;
+    RecyclerView.LayoutManager mLayoutManager;
+    CommentAdapter commentAdapter;
 
     // Creating RecyclerView.Adapter.
 
 
-    List<ImageUploadInfo> list = new ArrayList<>();
+   // List<ImageUploadInfo> list = new ArrayList<>();
     private FirebaseAuth.AuthStateListener mAuthListener;
     String postId="";
+    String userIdOfPost="";
+    String userNameViewThisPost="";
+    String avatarURLViewThisPost="";
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_viewpost);
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
-
-        //Khai bao
 
         bottomNavigationView = (BottomNavigationViewEx) findViewById(R.id.bottomNavViewBar);
         mBackArrow = (ImageView) findViewById(R.id.backArrow);
@@ -96,8 +117,11 @@ public class ViewPostActivity extends AppCompatActivity implements OnClickShowIm
         mLikes = (TextView) findViewById(R.id.image_likes);
         mComment = (ImageView) findViewById(R.id.speech_bubble);
         mComments = (TextView) findViewById(R.id.image_comments_link);
-      recyclerView = (RecyclerView) findViewById(R.id.recycler_view_profile);
-
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view_profile);
+        mNewComment = (EditText) findViewById(R.id.addComment);
+        mWriteComment=(Button) findViewById(R.id.writeComment);
+        oldComment = (RecyclerView) findViewById(R.id.oldComment);
+        oldComment.setHasFixedSize(true);
         setupFirebaseAuth();
 
         // Setting RecyclerView size true.
@@ -112,17 +136,19 @@ public class ViewPostActivity extends AppCompatActivity implements OnClickShowIm
         Bundle extras=getIntent().getExtras();
         postId=extras.getString("postID");
 
-
-        mCaption.setText(extras.getString("Caption"));
-
-        databaseReference = FirebaseDatabase.getInstance().getReference(Database_Path).child(userId);
-
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+        getValueCurrentUserViewThisPost(userId);
+        databaseReference3rd = FirebaseDatabase.getInstance().getReference(Post_Path).child(postId);
+        databaseReference3rd.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                mUsername.setText(dataSnapshot.child("username").getValue(String.class));
-              //  imageUrl[0] =dataSnapshot.child("avatarURL").getValue(String.class);
-                Glide.with(ViewPostActivity.this).load(dataSnapshot.child("avatarURL").getValue(String.class)).into(mProfileImage);
+                mCaption.setText(dataSnapshot.child("caption").getValue(String.class));
+                userIdOfPost=dataSnapshot.child("accountId").getValue(String.class);
+                mTimestamp.setText(dataSnapshot.child("timeStamp").getValue(String.class));
+                getValueUser(userIdOfPost);
+                if(!userIdOfPost.equals(userId)){
+                    mEllipses.setVisibility(View.GONE);
+                    mBackArrow.setVisibility(View.GONE);
+                }
             }
 
             @Override
@@ -131,20 +157,18 @@ public class ViewPostActivity extends AppCompatActivity implements OnClickShowIm
             }
         });
 
+
         databaseReference2nd=FirebaseDatabase.getInstance().getReference(Image_Post).child(postId);
 
         databaseReference2nd.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                ArrayList<String> arrayImageURL=new ArrayList<String>();
+                final ArrayList<String> arrayImageURL=new ArrayList<>();
                 for (DataSnapshot postSnapshot : snapshot.getChildren()) {
-                    ImageUploadInfo imageUploadInfo = postSnapshot.getValue(ImageUploadInfo.class);
-                   // list.add(imageUploadInfo);
+                    final ImageUploadInfo imageUploadInfo = postSnapshot.getValue(ImageUploadInfo.class);
                     arrayImageURL.add(imageUploadInfo.getImageURL());
-
                 }
-          //      mBinding = DataBindingUtil.setContentView(ViewPostActivity.this, R.layout.activity_viewimage);
-                initData(userId,postId,1,arrayImageURL);
+                initData(userIdOfPost,postId,1,arrayImageURL);
                 initViews();
 
             }
@@ -154,8 +178,6 @@ public class ViewPostActivity extends AppCompatActivity implements OnClickShowIm
 
             }
         });
-
-        databaseReference3rd = FirebaseDatabase.getInstance().getReference(Post_Path).child(postId);
 
 
         databaseReference4th=FirebaseDatabase.getInstance().getReference(Liked_Post).child(postId);
@@ -187,9 +209,8 @@ public class ViewPostActivity extends AppCompatActivity implements OnClickShowIm
         mHeartWhite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-              //  final String Liked = "";
-                //UserInfo userInfo=new UserInfo("",mUsername.getText().toString(),imageUrl[0],"","","");
-                databaseReference4th.child(userId).setValue("Liked This Post");
+                LikedPostInfo likedPostInfo=new LikedPostInfo(userNameViewThisPost,avatarURLViewThisPost,userId);
+                databaseReference4th.child(userId).setValue(likedPostInfo);
                 mHeartRed.setVisibility(View.VISIBLE);
                 mHeartWhite.setVisibility(View.INVISIBLE);
 
@@ -199,28 +220,6 @@ public class ViewPostActivity extends AppCompatActivity implements OnClickShowIm
         mHeartRed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                /*databaseReference3rd.child("liked").addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        String Liked=dataSnapshot.getValue(String.class);
-                        int numLiked=Integer.parseInt(Liked);
-                        Liked=String.valueOf(numLiked-1);
-                        PostInfo postInfo=new PostInfo(postId,userId,Liked,mCaption.getText().toString());
-                        //if set value same child will it consider update children?
-                        databaseReference3rd.setValue(postInfo);
-
-                        databaseReference4th.child(userId).removeValue();
-
-                        ReLoadActivity();
-
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });*/
                 databaseReference4th.child(userId).removeValue();
                 mHeartRed.setVisibility(View.INVISIBLE);
                 mHeartWhite.setVisibility(View.VISIBLE);
@@ -239,7 +238,9 @@ public class ViewPostActivity extends AppCompatActivity implements OnClickShowIm
         mLikes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(ViewPostActivity.this,LikedThisPostFragment.class));
+                Intent intent= new Intent(ViewPostActivity.this,LikedThisPostPopUp.class);
+                intent.putExtra("postId",postId);
+                startActivity(intent);
             }
         });
 
@@ -254,21 +255,57 @@ public class ViewPostActivity extends AppCompatActivity implements OnClickShowIm
             }
         });
 
+      /*  mLikes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(ViewPostActivity.this,LikedThisPostPopUp.class);
+                intent.putExtra("postId",postId);
+                startActivity(intent);
+            }
+        });*/
+
+        oldComment=(RecyclerView)findViewById(R.id.oldComment);
+        oldComment.setHasFixedSize(true);
+        mLayoutManager=new LinearLayoutManager(ViewPostActivity.this);
+        oldComment.setLayoutManager(mLayoutManager);
+        oldComment.addItemDecoration(new DividerItemDecoration(ViewPostActivity.this,LinearLayoutManager.VERTICAL));
+        oldComment.setItemAnimator(new DefaultItemAnimator());
+        final DatabaseReference commentRef = FirebaseDatabase.getInstance().getReference(Comment_Database).child(postId);
+        updateComment(commentRef);
+
+        mWriteComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!mNewComment.getText().toString().isEmpty()) {
+                    final String thisUser = mAuth.getCurrentUser().getUid().toString();
+                    FirebaseDatabase.getInstance().getReference(Database_Path).child(thisUser).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            UserInfo userInfo = dataSnapshot.getValue(UserInfo.class);
+                            Date date = Calendar.getInstance().getTime();
+                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd/HH:mm:ss");
+                            String timeStamp = simpleDateFormat.format(date);
+                            CommentInfo commentInfo = new CommentInfo(userInfo.getUsername(), mNewComment.getText().toString(), userInfo.getAvatarURL(), timeStamp);
+                            Map<String, Object> newContent = commentInfo.toMap();
+                            String key = commentRef.child(postId).push().getKey();
+                            commentRef.child(key).updateChildren(newContent);
+                            updateComment(commentRef);
+                            mNewComment.setText("");
+                        }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+            }
+        });
         setupBottomNavigationView();
 
 
 
     }
 
-    private void ReLoadActivity(){
-        //Reload activity without delay
-        Intent intent = getIntent();
-        overridePendingTransition(0, 0);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-        finish();
-        overridePendingTransition(0, 0);
-        startActivity(intent);
-    }
     private void ShowMenu(){
         PopupMenu popupMenu =new PopupMenu(this,mEllipses);
         popupMenu.getMenuInflater().inflate(R.menu.menupost,popupMenu.getMenu());
@@ -314,7 +351,7 @@ public class ViewPostActivity extends AppCompatActivity implements OnClickShowIm
                         databaseReference2nd.removeValue();
                         databaseReference3rd.removeValue();
                         databaseReference4th.removeValue();
-                        
+
                         startActivity(new Intent(getApplicationContext(),MainScreenActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
                         break;
                     }
@@ -358,8 +395,6 @@ public class ViewPostActivity extends AppCompatActivity implements OnClickShowIm
                 // ...
             }
         };
-
-
     }
 
     private void initData(String postId,String userId,long liked,ArrayList<String>ImageURL) {
@@ -370,7 +405,28 @@ public class ViewPostActivity extends AppCompatActivity implements OnClickShowIm
     private void initViews() {
         mProfileAdapter = new ProfileAdapter(this, mProfileList, this);
         recyclerView.setAdapter(mProfileAdapter);
-   //     mBinding.recyclerViewProfile.setLayoutManager(new LinearLayoutManager(this));
+    }
+
+    private void updateComment(final DatabaseReference commentRef){
+        commentRef.orderByChild("timeStamp").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Iterator<DataSnapshot> snapshotList = dataSnapshot.getChildren().iterator();
+                List<CommentViewHolder> commentholderList = new ArrayList<CommentViewHolder>();
+                while (snapshotList.hasNext()) {
+                    CommentInfo commentInfo = snapshotList.next().getValue(CommentInfo.class);
+                    commentholderList.add(new CommentViewHolder(commentInfo.getUsername(), commentInfo.getContent(), commentInfo.getAvatarURL()));
+                }
+                commentAdapter = new CommentAdapter(commentholderList, ViewPostActivity.this);
+                oldComment.setAdapter(commentAdapter);
+                commentAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
@@ -389,9 +445,58 @@ public class ViewPostActivity extends AppCompatActivity implements OnClickShowIm
 
     @Override
     public void onClickShowImage(Profile profile, int positionImage) {
-       /* Intent intent = new Intent(this, ShowImageActivity.class);
-        intent.putExtra(Constant.KEY_POSITION_IMAGE, positionImage);
-        intent.putExtra(Constant.KEY_DATA_PROFILE, profile);
-        startActivity(intent);*/
+        startDownload(mProfileList.get(0).getImageList().get(positionImage));
     }
+
+    private void getValueUser(String id){
+        final String strUserId=id;
+        databaseReference = FirebaseDatabase.getInstance().getReference(Database_Path).child(strUserId);
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                mUsername.setText(dataSnapshot.child("username").getValue(String.class));
+                Glide.with(ViewPostActivity.this).load(dataSnapshot.child("avatarURL").getValue(String.class)).diskCacheStrategy(DiskCacheStrategy.RESULT).into(mProfileImage);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void getValueCurrentUserViewThisPost(String userId){
+        databaseReference = FirebaseDatabase.getInstance().getReference(Database_Path).child(userId);
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                userNameViewThisPost=dataSnapshot.child("username").getValue(String.class);
+                avatarURLViewThisPost=dataSnapshot.child("avatarURL").getValue(String.class);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+    private void startDownload(String urlImage) {
+        File folder = new File(Environment.getExternalStorageDirectory() + "/Download");
+        if (!folder.exists()) {
+            folder.mkdir();
+        }
+        DownloadManager mManager = (DownloadManager) this.getSystemService(Context.DOWNLOAD_SERVICE);
+        DownloadManager.Request mRqRequest = new DownloadManager.Request(
+                Uri.parse(urlImage));
+        mRqRequest.setDescription("Image");
+        mRqRequest.setDestinationInExternalPublicDir("/Download", "image.png");
+        //mRqRequest.setDestinationUri(Uri.parse("/Download"));
+        mRqRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        long idDownLoad=mManager.enqueue(mRqRequest);
+
+
+    }
+
 }

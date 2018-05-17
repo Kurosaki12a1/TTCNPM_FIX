@@ -16,10 +16,14 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import com.bku.picshub.account.AccountSettingsActivity;
 import com.bku.picshub.account.LoginActivity;
+import com.bku.picshub.follow.FollowerPopUp;
+import com.bku.picshub.follow.FollowingPopUp;
 import com.bku.picshub.info.ImageUploadInfo;
 import com.bku.picshub.viewimageprofile.RecyclerViewAdapter;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -44,8 +48,8 @@ public class ViewSelfProfile extends AppCompatActivity {
     private static final int ACTIVITY_NUM = 4;
 
     public static final String Database_Path="All_User_Info_Database";
-    public static final String Following_Path="All_Following_Database";
-    public static final String Follower_Path="All_Follower_Database";
+    public static final String Following_Path="All_Following_User_Database";
+    public static final String Follower_Path="All_Follower_User_Database";
     public static final String Post_Path="All_Post_Info_Database";
 
     DatabaseReference databaseReference;
@@ -114,7 +118,9 @@ public class ViewSelfProfile extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 userName.setText(dataSnapshot.child("username").getValue(String.class));
                 emailName.setText(dataSnapshot.child("email").getValue(String.class));
-                Glide.with(ViewSelfProfile.this).load(dataSnapshot.child("avatarURL").getValue(String.class)).into(avatar);
+                Glide.with(ViewSelfProfile.this).load(dataSnapshot.child("avatarURL").getValue(String.class))
+                        .diskCacheStrategy(DiskCacheStrategy.RESULT)
+                        .into(avatar);
                 description.setText(dataSnapshot.child("description").getValue(String.class));
                 website.setText(dataSnapshot.child("website").getValue(String.class));
             }
@@ -167,11 +173,11 @@ public class ViewSelfProfile extends AppCompatActivity {
         });
 
         databaseReference4th=FirebaseDatabase.getInstance().getReference(Follower_Path).child(userId);
-        databaseReference3rd.addValueEventListener(new ValueEventListener() {
+        databaseReference4th.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 numFollower.setText(String.valueOf(dataSnapshot.getChildrenCount()));
-            }
+           }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
@@ -198,6 +204,22 @@ public class ViewSelfProfile extends AppCompatActivity {
             }
         });
 
+        numFollower.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(ViewSelfProfile.this, FollowerPopUp.class);
+                startActivity(intent);
+            }
+        });
+
+        numFollwing.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(ViewSelfProfile.this, FollowingPopUp.class);
+                startActivity(intent);
+            }
+        });
+
 
         popUpMenu = (Button) findViewById(R.id.profileMenu);
         popUpMenu.setOnClickListener(new View.OnClickListener() {
@@ -218,24 +240,16 @@ public class ViewSelfProfile extends AppCompatActivity {
                     case R.id.edit_profile_button: {
                         list = new ArrayList<>();
                         Intent intent = new Intent(ViewSelfProfile.this, EditProfileActivity.class);
-                        startActivity(intent);
+                        startActivity(intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
 
                         //startActivity(new Intent(getApplicationContext(),EditProfileActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
                         break;
                     }
                     case R.id.accountSettings: {
-                        //Intent intent = new Intent(MainScreenActivity.this, MainLoginActivity.class);
-                        //finish();
-                        // startActivity(new Intent(getApplicationContext(),MainLoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                        startActivity(new Intent(ViewSelfProfile.this,AccountSettingsActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
                         break;
                     }
 
-                    case R.id.yourPhoto: {
-                        //Intent intent = new Intent(MainScreenActivity.this, MainActivity.class);
-                        //finish();
-                        //  startActivity(new Intent(getApplicationContext(),MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
-                        break;
-                    }
 
                     case R.id.sign_out: {
                         signOut();

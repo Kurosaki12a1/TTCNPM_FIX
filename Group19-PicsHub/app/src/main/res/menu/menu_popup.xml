@@ -7,8 +7,6 @@
     <item android:title="Account Settings"
         android:id="@+id/accountSettings"></item>
 
-    <item android:title="Your Photo"
-        android:id="@+id/yourPhoto"></item>
 
     <item android:title="Sign Out"
         android:id="@+id/sign_out"></item>

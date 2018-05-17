@@ -17,8 +17,8 @@
             android:layout_height="match_parent"
 
             android:layout_alignParentTop="true"
-            android:layout_toEndOf="@+id/imageView4"
-            android:layout_toRightOf="@+id/imageView4"
+            android:layout_toEndOf="@+id/backArrow"
+            android:layout_toRightOf="@+id/backArrow"
             android:paddingTop="15dp"
             android:layout_marginStart="15dp"
             android:text="People Liked This Post"
@@ -26,7 +26,7 @@
             android:layout_marginLeft="15dp" />
 
         <ImageView
-            android:id="@+id/imageView2"
+            android:id="@+id/exit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
@@ -39,7 +39,7 @@
             app:srcCompat="@drawable/ic_black_x" />
 
         <ImageView
-            android:id="@+id/imageView4"
+            android:id="@+id/backArrow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"

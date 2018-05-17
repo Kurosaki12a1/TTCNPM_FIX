@@ -14,9 +14,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bku.picshub.info.ImageUploadInfo;
+import com.bku.picshub.info.PostInfo;
 import com.bku.picshub.info.UserFollowInfo;
+import com.bku.picshub.newfeed.NewFeedAdapter;
+import com.bku.picshub.newfeed.SortByDate;
 import com.bku.picshub.viewimageprofile.RecyclerViewAdapter;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -38,9 +42,10 @@ import java.util.List;
 public class ViewProfile extends AppCompatActivity {
     private static final String TAG = "View Profile Activity";
     public static final String Database_Path="All_User_Info_Database";
-    public static final String Following_Path="All_Following_Database";
-    public static final String Follower_Path="All_Follower_Database";
+    public static final String Following_Path="All_Following_User_Database";
+    public static final String Follower_Path="All_Follower_User_Database";
     public static final String Post_Path="All_Post_Info_Database";
+    public static final String NewFeed_Path="All_New_Feed_Database";
     private ImageView avatarUser;
 
     private static final int ACTIVITY_NUM = 1;
@@ -66,8 +71,12 @@ public class ViewProfile extends AppCompatActivity {
     String userID="";
     String myUserName="";
     String myAvatarURL="";
+    String myEmail="";
+    ArrayList<PostInfo> lstPostOfCurrentPost;
+    ArrayList<PostInfo> lstNewFeed;
     boolean isFollowing=false;
     int numOfPost=0;
+    static int i=0;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,8 +100,6 @@ public class ViewProfile extends AppCompatActivity {
         userID=mAuth.getCurrentUser().getUid().toString();
         databaseReference3rd=FirebaseDatabase.getInstance().getReference(Following_Path);
         databaseReference4th=FirebaseDatabase.getInstance().getReference(Follower_Path);
-        checkFollowed();
-
         setupFirebaseAuth();
 
         databaseReference = FirebaseDatabase.getInstance().getReference(Database_Path);
@@ -101,7 +108,7 @@ public class ViewProfile extends AppCompatActivity {
         final String email=extras.getString("email");
         username.setText(extras.getString("username"));
 
-        databaseReference.child(userID).addValueEventListener(new ValueEventListener() {
+       /* databaseReference.child(userID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 myUserName=dataSnapshot.child("username").getValue(String.class);
@@ -112,144 +119,62 @@ public class ViewProfile extends AppCompatActivity {
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        });*/
 
-        databaseReference.addValueEventListener(new ValueEventListener() {
+        databaseReference.child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()){
-                    if(postSnapshot.child("email").getValue().toString().contains(email)){
-                        userIdOfCurrentPost=postSnapshot.getKey();
-                        description.setText(postSnapshot.child("description").getValue().toString());
-                        website.setText(postSnapshot.child("website").getValue().toString());
-                        AvatarURLOfCurrentPost=postSnapshot.child("avatarURL").getValue(String.class);
-                        Glide.with(ViewProfile.this).load(postSnapshot.child("avatarURL").getValue().toString()).into(avatarUser);
-                        break;
+                myUserName=dataSnapshot.child("username").getValue(String.class);
+                myAvatarURL=dataSnapshot.child("avatarURL").getValue(String.class);
+                myUserName=dataSnapshot.child("email").getValue(String.class);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                        if (postSnapshot.child("email").getValue().toString().equals(email)) {
+                            userIdOfCurrentPost = postSnapshot.getKey();
+                            description.setText(postSnapshot.child("description").getValue().toString());
+                            website.setText(postSnapshot.child("website").getValue().toString());
+                            AvatarURLOfCurrentPost = postSnapshot.child("avatarURL").getValue(String.class);
+                            Glide.with(ViewProfile.this).load(postSnapshot.child("avatarURL").getValue().toString())
+                                    .diskCacheStrategy(DiskCacheStrategy.RESULT)
+                                    .into(avatarUser);
+                            getDataUserPath(userIdOfCurrentPost);
+                            break;
+                        }
                     }
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-        databaseReference2nd = FirebaseDatabase.getInstance().getReference("All_Image_Uploads_Database").child(userIdOfCurrentPost);
-
-        // Adding Add Value Event Listener to databaseReference.
-        databaseReference2nd.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
-                    ImageUploadInfo imageUploadInfo = postSnapshot.getValue(ImageUploadInfo.class);
-                    list.add(imageUploadInfo);
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
                 }
-                //list.add(imageUploadInfo);
-                //dao nguoc thu tu theo ngay thang
-                Collections.reverse(list);
-                adapter = new RecyclerViewAdapter(getApplicationContext(), list);
+            });
 
-                // chia list ra lam 3
-                recyclerView.setLayoutManager(new GridLayoutManager(ViewProfile.this, 3));
-
-                recyclerView.setAdapter(adapter);
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-       databaseReference3rd.child(userIdOfCurrentPost).addValueEventListener(new ValueEventListener() {
-           @Override
-           public void onDataChange(DataSnapshot dataSnapshot) {
-               numFollwing.setText(Long.toString(dataSnapshot.getChildrenCount()));
-           }
-
-           @Override
-           public void onCancelled(DatabaseError databaseError) {
-
-           }
-       });
-
-       databaseReference4th.child(userIdOfCurrentPost).addValueEventListener(new ValueEventListener() {
-           @Override
-           public void onDataChange(DataSnapshot dataSnapshot) {
-               numFollower.setText(Long.toString(dataSnapshot.getChildrenCount()));
-           }
-
-           @Override
-           public void onCancelled(DatabaseError databaseError) {
-
-           }
-       });
-
-        databaseReference5th=FirebaseDatabase.getInstance().getReference(Post_Path);
-        databaseReference5th.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                numOfPost=0;
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()){
-                    if(postSnapshot.child("accountId").getValue().equals(userIdOfCurrentPost)){
-                        numOfPost++;
-                    }
-                }
-                numPost.setText(String.valueOf(numOfPost));
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-        follow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                UserFollowInfo userFollowInfo=new UserFollowInfo(myUserName,myAvatarURL);
-                UserFollowInfo userFollowerInfo=new UserFollowInfo(username.getText().toString(),AvatarURLOfCurrentPost);
-                databaseReference3rd.child(userIdOfCurrentPost).child(userID).setValue(userFollowInfo);
-                databaseReference4th.child(userID).child(userIdOfCurrentPost).setValue(userFollowerInfo);
-                follow.setVisibility(View.INVISIBLE);
-                unfollow.setVisibility(View.VISIBLE);
-            }
-        });
-
-        unfollow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                databaseReference3rd.child(userIdOfCurrentPost).child(userID).removeValue();
-                databaseReference4th.child(userID).child(userIdOfCurrentPost).removeValue();
-                unfollow.setVisibility(View.INVISIBLE);
-                follow.setVisibility(View.VISIBLE);
-
-            }
-        });
         setupBottomNavigationView();
     }
 
-    private void ReLoadActivity(){
-        //Reload activity without delay
-        Intent intent = getIntent();
-        overridePendingTransition(0, 0);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-        finish();
-        overridePendingTransition(0, 0);
-        startActivity(intent);
-    }
-    private void checkFollowed(){
+    private void checkFollowed(final String userIdOfCurrentPost){
 
-        databaseReference3rd.child(userIdOfCurrentPost).addValueEventListener(new ValueEventListener() {
+        databaseReference3rd.child(userID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
                 for(DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    if (postSnapshot.getKey().equals(userID)) {
+                    if (postSnapshot.getKey().equals(userIdOfCurrentPost)) {
                         isFollowing = true;
-                        break;
+                        follow.setVisibility(View.INVISIBLE);
+                        unfollow.setVisibility(View.VISIBLE);
+                        return;
                     }
                 }
 
@@ -260,14 +185,11 @@ public class ViewProfile extends AppCompatActivity {
 
             }
         });
-        if(isFollowing){
-            follow.setVisibility(View.INVISIBLE);
-            unfollow.setVisibility(View.VISIBLE);
-        }
-        else{
+
+
             unfollow.setVisibility(View.INVISIBLE);
             follow.setVisibility(View.VISIBLE);
-        }
+
     }
 
     private void setupBottomNavigationView(){
@@ -301,6 +223,174 @@ public class ViewProfile extends AppCompatActivity {
             }
         };
 
+
+    }
+
+    private void getDataUserPath(String strUserIdOfCurrentPost){
+        final String userCurrentPost=strUserIdOfCurrentPost;
+        checkFollowed(userCurrentPost);
+        databaseReference3rd.child(userCurrentPost).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                numFollwing.setText(String.valueOf(dataSnapshot.getChildrenCount()));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        databaseReference4th.child(userCurrentPost).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                numFollower.setText(String.valueOf(dataSnapshot.getChildrenCount()));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        databaseReference2nd = FirebaseDatabase.getInstance().getReference("All_Image_Uploads_Database").child(userCurrentPost);
+        databaseReference2nd.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+                    ImageUploadInfo imageUploadInfo = postSnapshot.getValue(ImageUploadInfo.class);
+                    list.add(imageUploadInfo);
+
+                }
+                //list.add(imageUploadInfo);
+                //dao nguoc thu tu theo ngay thang
+                Collections.reverse(list);
+                adapter = new RecyclerViewAdapter(getApplicationContext(), list);
+
+                // chia list ra lam 3
+                recyclerView.setLayoutManager(new GridLayoutManager(ViewProfile.this, 3));
+
+                recyclerView.setAdapter(adapter);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
+        databaseReference5th = FirebaseDatabase.getInstance().getReference(Post_Path);
+        databaseReference5th.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                numOfPost = 0;
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+
+                    if (postSnapshot.child("accountId").getValue().equals(userCurrentPost)) {
+                        numOfPost++;
+                    }
+                }
+                numPost.setText(String.valueOf(numOfPost));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        follow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                UserFollowInfo userFollowInfo=new UserFollowInfo(username.getText().toString(),AvatarURLOfCurrentPost,myEmail);
+                UserFollowInfo userFollowerInfo=new UserFollowInfo(myUserName,myAvatarURL,myEmail);
+                databaseReference3rd.child(userID).child(userCurrentPost).setValue(userFollowInfo);
+                databaseReference4th.child(userCurrentPost).child(userID).setValue(userFollowerInfo);
+                follow.setVisibility(View.INVISIBLE);
+                unfollow.setVisibility(View.VISIBLE);
+                getListPostFromUserFollow();
+
+            }
+        });
+
+        unfollow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                databaseReference3rd.child(userID).child(userCurrentPost).removeValue();
+                databaseReference4th.child(userCurrentPost).child(userID).removeValue();
+                unfollow.setVisibility(View.INVISIBLE);
+                follow.setVisibility(View.VISIBLE);
+                i=0;
+                final DatabaseReference databaseReference2=FirebaseDatabase.getInstance().getReference(NewFeed_Path).child(userID);
+                databaseReference2.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for(DataSnapshot singleSnapshot:dataSnapshot.getChildren()){
+                            if(singleSnapshot.child("accountId").getValue(String.class).equals(userIdOfCurrentPost)){
+                                databaseReference2.child(singleSnapshot.getKey()).removeValue();
+                            }
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        });
+    }
+    private void getListPostFromUserFollow() {
+
+            databaseReference5th.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    lstPostOfCurrentPost = new ArrayList<>();
+                    for (DataSnapshot singleSnapshot : dataSnapshot.getChildren()) {
+                        if (singleSnapshot.child("accountId").getValue(String.class).equals(userIdOfCurrentPost))
+                            lstPostOfCurrentPost.add(singleSnapshot.getValue(PostInfo.class));
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+        DatabaseReference databaseReference2 = FirebaseDatabase.getInstance().getReference(NewFeed_Path).child(userID);
+        databaseReference2.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                lstNewFeed = new ArrayList<>();
+                    if (i==0) {
+                    for (DataSnapshot singleSnapshot : dataSnapshot.getChildren()) {
+                        lstNewFeed.add(singleSnapshot.getValue(PostInfo.class));
+                    }
+                    resetDatabase();
+                    i++;
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+    private void resetDatabase(){
+        lstNewFeed.addAll(lstPostOfCurrentPost);
+        Collections.sort(lstNewFeed, new SortByDate());
+        DatabaseReference databaseReference2=FirebaseDatabase.getInstance().getReference(NewFeed_Path).child(userID);
+        databaseReference2.removeValue();
+        for(int i=0;i<lstNewFeed.size();i++){
+            databaseReference2.child(lstNewFeed.get(i).getPostId()).setValue(lstNewFeed.get(i));
+        }
 
     }
 }

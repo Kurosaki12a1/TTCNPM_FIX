@@ -165,7 +165,7 @@
                     android:layout_marginLeft="10dp"
                     android:layout_toRightOf="@+id/speech_bubble"
                     android:src="@drawable/download_pic"
-                    android:visibility="visible"
+                    android:visibility="gone"
                     />
 
             </RelativeLayout>
@@ -183,10 +183,11 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@null"
-                    android:textColor="@color/black"
+                    android:text="Thịnh đã thích điều này"
+                    android:textColor="@color/link_blue"
                     android:textSize="18sp"
-                    android:id="@+id/image_likes"/>
+                    android:id="@+id/image_likes"
+                    />
 
                 <EditText
                     android:layout_width="wrap_content"
@@ -224,6 +225,44 @@
                     android:id="@+id/image_time_posted"
                     android:layout_marginTop="15dp"/>
 
+
+            <RelativeLayout
+                android:id="@+id/comments"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/image_time_posted"
+                android:layout_marginTop="15dp">
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/oldComment"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp">
+
+                </android.support.v7.widget.RecyclerView>
+
+                <TextView
+                    android:id="@+id/yourComment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/oldComment"
+                    android:text="Add your comment here:" />
+
+                <EditText
+                    android:id="@+id/addComment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/yourComment"
+                    android:ems="10"
+                    android:inputType="textMultiLine" />
+
+                <Button
+                    android:id="@+id/writeComment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/addComment"
+                    android:text="Comment" />
+
+            </RelativeLayout>
             </RelativeLayout>
 
         </RelativeLayout>

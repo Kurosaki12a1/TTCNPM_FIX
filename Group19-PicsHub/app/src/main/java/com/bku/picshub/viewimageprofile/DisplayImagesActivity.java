@@ -87,7 +87,7 @@ public class    DisplayImagesActivity extends AppCompatActivity {
 
                 }
                 //list.add(imageUploadInfo);
-                adapter = new RecyclerViewAdapter(getApplicationContext(), list);
+                adapter = new RecyclerViewAdapter(DisplayImagesActivity.this, list);
 
                 // chia list ra lam 3
                 recyclerView.setLayoutManager(new GridLayoutManager(DisplayImagesActivity.this, 3));

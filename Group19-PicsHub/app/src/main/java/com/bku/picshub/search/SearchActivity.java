@@ -72,7 +72,7 @@ public class SearchActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
 
-                String text = mSearch.getText().toString()  ;
+                String text = mSearch.getText().toString().toLowerCase()  ;
                 searchForMatch(text);
             }
         });
@@ -90,9 +90,10 @@ public class SearchActivity extends AppCompatActivity {
             databaseReference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
+                    mListUserInfo=new ArrayList<>();
                     for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                        // Toast.makeText(SearchActivity.this, postSnapshot.child("username").getValue().toString() + "and " +keyword, Toast.LENGTH_SHORT).show();
-                        if (postSnapshot.child("username").getValue().toString().contains(keyword)) {
+                        if (postSnapshot.child("username").getValue().toString().toLowerCase().contains(keyword)) {
                          //   Toast.makeText(SearchActivity.this, "FINALLY WE CAn", Toast.LENGTH_SHORT).show();
                             mListUserInfo.add(postSnapshot.getValue(UserInfo.class));
 

@@ -60,7 +60,7 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ProfileV
             SlideImageAdapter slideImageAdapter =
                 new SlideImageAdapter(mContext, profile, mOnClickShowImageListener);
             mBinding.slideImageViewPager.setAdapter(slideImageAdapter);
-            mBinding.slideImageViewPager.setOffscreenPageLimit(MAX_SIZE_IMAGE_LOAD);
+            mBinding.slideImageViewPager.setOffscreenPageLimit(8);
             mBinding.indicator.setViewPager(mBinding.slideImageViewPager);
             mBinding.executePendingBindings();
         }

@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -21,11 +22,12 @@
             </intent-filter>
         </activity>
         <activity android:name=".MainScreenActivity"
-            android:label="Main Screen"></activity>
-        <activity android:name=".MainActivity"></activity>
-        <activity android:name=".viewimageprofile.DisplayImagesActivity"></activity>
+            android:label="Main Screen"/>
+        <activity android:name=".MainActivity"/>
+        <activity android:name=".toplike.TopLikeActivity"/>
+        <activity android:name=".viewimageprofile.DisplayImagesActivity"/>
         <activity
-            android:name=".account.MainLoginActivity"
+            android:name=".account.AccountSettingsActivity"
             android:label="@string/title_activity_profile" />
         <activity
             android:name=".account.SignupActivity"
@@ -45,15 +47,17 @@
         <activity
             android:name=".post.ViewPostActivity"
             android:label="View Post" />
-        <activity android:name=".likedpost.LikedThisPostFragment"
-            android:theme="@style/AppTheme.PopupOverlay"/>
+        <activity android:name=".likedpost.LikedThisPostPopUp"
+            android:theme="@style/AppTheme.LikedPopUp"/>
 
-        <activity android:name=".viewimage.view.activity.ShowImageActivity"
-            android:theme="@style/AppTheme"/>
         <activity android:name=".search.SearchActivity"
             android:theme="@style/AppTheme"/>
         <activity android:name=".ViewProfile"
             android:theme="@style/AppTheme"/>
+        <activity android:name=".follow.FollowerPopUp"
+            android:theme="@style/AppTheme.LikedPopUp"/>
+        <activity android:name=".follow.FollowingPopUp"
+            android:theme="@style/AppTheme.LikedPopUp"/>
     </application>
 
 </manifest>

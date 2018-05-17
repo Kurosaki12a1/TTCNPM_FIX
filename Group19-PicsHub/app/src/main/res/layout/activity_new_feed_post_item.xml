@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:paddingBottom="10dp">
+
+
+        <RelativeLayout
+            android:id="@+id/relLayout1"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_margin="0.5dp"
+            android:background="@drawable/name_post">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/profile_photo"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="20dp"
+                app:civ_border_color="@color/black"
+                app:civ_border_width="0.5dp" />
+
+
+            <TextView
+                android:id="@+id/username"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="10dp"
+                android:layout_toRightOf="@+id/profile_photo"
+                android:text="PicsHub"
+                android:textColor="@color/black"
+                android:textSize="20sp" />
+
+
+            <ImageView
+                android:id="@+id/ivEllipses"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignBottom="@+id/username"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginEnd="20dp"
+                android:layout_marginRight="20dp"
+                android:src="@drawable/ic_ellipses" />
+
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/Linear1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/relLayout1"
+            android:layout_marginLeft="0.5dp"
+            android:layout_marginRight="0.5dp"
+            android:layout_marginTop="-10dp"
+            android:background="@drawable/bottom_border">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recycler_view_profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="20dp" />
+
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/relLayout2"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/Linear1"
+            android:layout_margin="0.5dp"
+            android:background="@drawable/bottom_border">
+
+            <RelativeLayout
+                android:id="@+id/heartLayout"
+                android:layout_width="60dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:background="@color/white">
+
+                <ImageView
+                    android:id="@+id/image_heart_red"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_centerInParent="true"
+                    android:layout_marginLeft="20dp"
+                    android:src="@drawable/red_heart_icon"
+                    android:visibility="invisible" />
+
+                <ImageView
+                    android:id="@+id/image_heart"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_centerInParent="true"
+                    android:layout_marginLeft="20dp"
+                    android:src="@drawable/white_heart_icon"
+                    android:visibility="visible" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/speechLayout"
+                android:layout_width="60dp"
+                android:layout_height="match_parent"
+                android:layout_margin="2dp"
+                android:background="@color/white"
+                android:layout_toRightOf="@+id/heartLayout">
+
+                <ImageView
+                    android:id="@+id/speech_bubble"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="10dp"
+                    android:src="@drawable/ic_speech_bubble"
+                    android:visibility="invisible" />
+
+                <ImageView
+                    android:id="@+id/speech_bubble_blue"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="10dp"
+                    android:src="@drawable/ic_speech_bubble_blue"
+                    android:visibility="visible" />
+
+            </RelativeLayout>
+
+            <ImageView
+                android:id="@+id/download"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="10dp"
+                android:layout_toRightOf="@+id/speechLayout"
+                android:src="@drawable/download_pic"
+                android:visibility="gone" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/relLayout3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/relLayout2"
+            android:layout_margin="0.5dp"
+            android:padding="20dp">
+
+
+            <TextView
+                android:id="@+id/image_likes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Thịnh đã thích điều này"
+                android:textColor="@color/link_blue"
+                android:textSize="18sp" />
+
+            <EditText
+                android:id="@+id/image_caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/image_likes"
+                android:layout_marginTop="15dp"
+                android:enabled="false"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:text="Have A Nice Day"
+                android:textColor="@color/black"
+                android:textSize="18sp" />
+
+
+            <TextView
+                android:id="@+id/image_time_posted"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/image_caption"
+                android:layout_marginTop="15dp"
+                android:text="3 DAYS AGO"
+                android:textColor="@color/grey"
+                android:textSize="18sp" />
+
+            <RelativeLayout
+                android:id="@+id/comments"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/image_time_posted"
+                android:layout_marginTop="15dp"
+                android:visibility="gone"
+                android:background="@drawable/top_border">
+
+                <TextView
+                    android:id="@+id/image_comments_link"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/addComment"
+                    android:layout_marginTop="15dp"
+                    android:text="View all 3 comments"
+                    android:textColor="@color/grey"
+                    android:textSize="18sp" />
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/oldComment"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_below="@+id/image_comments_link">
+
+                </android.support.v7.widget.RecyclerView>
+
+                <TextView
+                    android:id="@+id/yourComment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Add your comment here:" />
+
+                <EditText
+                    android:id="@+id/addComment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/yourComment"
+                    android:ems="10"
+                    android:inputType="textMultiLine" />
+
+            </RelativeLayout>
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

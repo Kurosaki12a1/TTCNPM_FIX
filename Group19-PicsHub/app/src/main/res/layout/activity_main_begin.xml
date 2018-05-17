@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".MainLoginActivity">
+    tools:context=".account.AccountSettingsActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -41,7 +41,8 @@
             android:hint="@string/hint_email"
             android:inputType="textEmailAddress"
             android:maxLines="1"
-            android:singleLine="true" />
+            android:singleLine="true"
+            android:visibility="gone"/>
 
         <EditText
             android:id="@+id/new_email"
@@ -50,7 +51,8 @@
             android:hint="@string/hint_new_email"
             android:inputType="textEmailAddress"
             android:maxLines="1"
-            android:singleLine="true" />
+            android:singleLine="true"
+            android:visibility="gone"/>
 
         <EditText
             android:id="@+id/password"
@@ -85,7 +87,8 @@
             android:background="@color/colorPrimaryDark"
             android:text="@string/btn_change"
             android:textColor="@android:color/white"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/changePass"
@@ -133,7 +136,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/change_email"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/change_password_button"
@@ -171,7 +175,8 @@
             android:background="@color/colorPrimary"
             android:text="@string/btn_sign_out"
             android:textColor="@android:color/white"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:visibility="gone"/>
 
     </LinearLayout>
 

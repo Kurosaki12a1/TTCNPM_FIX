@@ -7,12 +7,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bku.picshub.R;
 import com.bku.picshub.info.ImageUploadInfo;
 import com.bku.picshub.post.ViewPostActivity;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 
 import java.util.List;
 
@@ -22,8 +27,8 @@ import java.util.List;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>  {
 
-    static Context context;
-    List<ImageUploadInfo> MainImageUploadInfoList;
+    private final  Context context;
+    private List<ImageUploadInfo> MainImageUploadInfoList;
 
 
     public RecyclerViewAdapter(Context context, List<ImageUploadInfo> TempList) {
@@ -36,29 +41,49 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recyclerview_items, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.square_grid_relative_layout, parent, false);
 
         ViewHolder viewHolder = new ViewHolder(view);
+
 
         return viewHolder;
     }
 
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         final ImageUploadInfo UploadInfo = MainImageUploadInfoList.get(position);
 
      //   holder.imageNameTextView.setText(UploadInfo.getImageName());
 
         //Loading image from Glide library.
-        Glide.with(context).load(UploadInfo.getImageURL()).into(holder.imageView);
+        Glide
+                .with(context)
+                .load(UploadInfo.getImageURL())
+                .listener(new RequestListener<String, GlideDrawable>() {
+                    @Override
+                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                        return false;
+                    }
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                        holder.mProgressBar.setVisibility(View.GONE);
+                        return false;
+                    }
+                })
+                .diskCacheStrategy(DiskCacheStrategy.RESULT)
+                .into(holder.image);
+
+
+
+        holder.image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(context,ViewPostActivity.class);
+                Intent intent = new Intent(context,ViewPostActivity.class);
                 intent.putExtra("postID",UploadInfo.getPostId());
                 intent.putExtra("Caption",UploadInfo.getCaption());
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(intent);
             }
         });
@@ -73,19 +98,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
 
 
-    class ViewHolder extends RecyclerView.ViewHolder {
-
-        public ImageView imageView;
+    public static class ViewHolder extends RecyclerView.ViewHolder{
+        ImageView image;
+        ProgressBar mProgressBar;
 
         public ViewHolder(View itemView) {
             super(itemView);
-
-            imageView = (ImageView) itemView.findViewById(R.id.imageView);
-
-
-
-
-
+            this.image = itemView.findViewById(R.id.gridImageView);
+            this.mProgressBar = itemView.findViewById(R.id.gridImageProgressBar);
         }
     }
 }

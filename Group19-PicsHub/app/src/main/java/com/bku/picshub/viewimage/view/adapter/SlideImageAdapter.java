@@ -20,6 +20,7 @@ public class SlideImageAdapter extends PagerAdapter {
     private List<String> mImageList;
     private LayoutInflater mLayoutInflater;
     private Profile mProfile;
+
     private OnClickShowImageListener mOnClickShowImageListener;
 
     public SlideImageAdapter(Context context, Profile profile,
@@ -45,12 +46,14 @@ public class SlideImageAdapter extends PagerAdapter {
     public Object instantiateItem(ViewGroup container, final int position) {
         FragmentSlideProfileBinding binding = DataBindingUtil.inflate(mLayoutInflater,
             R.layout.fragment_slide_profile, container, false);
-        binding.getRoot().setOnClickListener(new View.OnClickListener() {
+        binding.getRoot().setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public void onClick(View v) {
+            public boolean onLongClick(View v) {
                 if (mOnClickShowImageListener != null) {
                     mOnClickShowImageListener.onClickShowImage(mProfile, position);
+                    return true;
                 }
+                return false;
             }
         });
         binding.setUrl(mImageList.get(position));

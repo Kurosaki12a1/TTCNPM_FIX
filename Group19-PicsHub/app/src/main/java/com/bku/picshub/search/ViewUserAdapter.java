@@ -12,8 +12,11 @@ import android.widget.TextView;
 
 import com.bku.picshub.R;
 import com.bku.picshub.ViewProfile;
+import com.bku.picshub.ViewSelfProfile;
 import com.bku.picshub.info.UserInfo;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
 
@@ -24,6 +27,7 @@ import java.util.List;
 public class ViewUserAdapter extends RecyclerView.Adapter<ViewUserAdapter.ViewHolder> {
     static Context context;
     List<UserInfo> AllUserInfo;
+    FirebaseAuth mAuth;
     private static AdapterView.OnItemClickListener listener;
 
     public ViewUserAdapter(Context context, List<UserInfo> TempList) {
@@ -31,6 +35,7 @@ public class ViewUserAdapter extends RecyclerView.Adapter<ViewUserAdapter.ViewHo
         this.AllUserInfo = TempList;
 
         this.context = context;
+        mAuth=FirebaseAuth.getInstance();
     }
 
     @Override
@@ -46,16 +51,34 @@ public class ViewUserAdapter extends RecyclerView.Adapter<ViewUserAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewUserAdapter.ViewHolder holder, int position) {
-        UserInfo userInfo = AllUserInfo.get(position);
+
+        final UserInfo userInfo = AllUserInfo.get(position);
 
         //   holder.imageNameTextView.setText(UploadInfo.getImageName());
 
         //Loading image from Glide library.
-        Glide.with(context).load(userInfo.getAvatarURL()).into(holder.avatarUser);
+        Glide.with(context).load(userInfo.getAvatarURL()).diskCacheStrategy(DiskCacheStrategy.RESULT).into(holder.avatarUser);
 
         holder.userName.setText(userInfo.getUsername());
 
         holder.email.setText(userInfo.getEmail());
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(userInfo.getEmail().equals(mAuth.getCurrentUser().getEmail())){
+                    Intent intent =  new Intent(context, ViewSelfProfile.class);
+                    context.startActivity(intent);
+                }
+                else {
+                    Intent intent = new Intent(context, ViewProfile.class);
+                    intent.putExtra("email", userInfo.getEmail());
+                    intent.putExtra("username", userInfo.getUsername());
+                    context.startActivity(intent);
+                }
+
+            }
+        });
 
     }
 
@@ -84,17 +107,7 @@ public class ViewUserAdapter extends RecyclerView.Adapter<ViewUserAdapter.ViewHo
             email=(TextView) itemView.findViewById(R.id.email);
 
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
 
-                        Intent intent =  new Intent(context, ViewProfile.class);
-                        intent.putExtra("email", email.getText().toString());
-                        intent.putExtra("username",userName.getText().toString());
-                        context.startActivity(intent);
-
-                }
-            });
         }
     }
 }

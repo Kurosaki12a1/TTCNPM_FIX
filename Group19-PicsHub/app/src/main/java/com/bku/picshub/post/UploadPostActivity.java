@@ -9,15 +9,20 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bku.picshub.MainScreenActivity;
 import com.bku.picshub.R;
+import com.bku.picshub.ViewSelfProfile;
 import com.bku.picshub.info.ImageUploadInfo;
 import com.bku.picshub.info.PostInfo;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -34,7 +39,11 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Welcome on 3/22/2018.
@@ -47,6 +56,8 @@ public class UploadPostActivity extends AppCompatActivity {
     public static final String Post_Path="All_Post_Info_Database";
     public static final String Image_Of_Post="Image_Of_Post_Database";
     public static final String Liked_Path="All_Liked_Post_Database";
+    public static final String Follower_Path="All_Follower_User_Database";
+    public static final String NewFeed_Path="All_New_Feed_Database";
     String Storage_Path = "Image Store";
     // Image request code for onActivityResult() .
     int Image_Request_Code = 7;
@@ -57,9 +68,11 @@ public class UploadPostActivity extends AppCompatActivity {
     DatabaseReference databaseReference2nd;
     DatabaseReference databaseReference3rd;
     DatabaseReference databaseReference4th;
+    DatabaseReference databaseReference5th;
+    DatabaseReference databaseReference6th;
     FirebaseAuth mAuth;
 
-    Uri FilePathUri;
+    ArrayList<Uri> FilePathUri;
     ArrayList<Uri> LFilePathUri;
 
     ProgressDialog progressDialog ;
@@ -67,14 +80,15 @@ public class UploadPostActivity extends AppCompatActivity {
     private ImageView imagePost,backArrow;
     private EditText Caption;
     private TextView confirm;
-
+    private RecyclerView recyclerView;
+    private ProgressBar progressBar;
     String userId="";
     String imageUrl="";
     String postID="";
-
+    String timeStamp="";
     boolean isChooseImage=false;
     ProgressDialog progressDialog2nd ;
-
+    ArrayList<String> lstIdFollower=new ArrayList<>();
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_uploadpost);
@@ -89,16 +103,31 @@ public class UploadPostActivity extends AppCompatActivity {
         Caption=(EditText)findViewById(R.id.caption);
         confirm=(TextView)findViewById(R.id.tvShare);
         backArrow=(ImageView)findViewById(R.id.ivBackArrow);
+        recyclerView=(RecyclerView)findViewById(R.id.recyclerView);
+        progressBar=(ProgressBar)findViewById(R.id.progressBar);
+        recyclerView.setHasFixedSize(true);
+
+
+        progressBar.setProgress(0);
+
 
         databaseReference = FirebaseDatabase.getInstance().getReference(Database_Path);
         databaseReference2nd=FirebaseDatabase.getInstance().getReference(Post_Path);
         databaseReference3rd=FirebaseDatabase.getInstance().getReference(Image_Of_Post);
         databaseReference4th=FirebaseDatabase.getInstance().getReference(Liked_Path);
+        databaseReference5th=FirebaseDatabase.getInstance().getReference(Follower_Path);
+        databaseReference6th=FirebaseDatabase.getInstance().getReference(NewFeed_Path);
 
+        getListOfFollower();
         postID=databaseReference3rd.push().getKey();
         storageReference = FirebaseStorage.getInstance().getReference();
 
         LFilePathUri=new ArrayList<>();
+
+        Date date = Calendar.getInstance().getTime();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd/ HH:mm:ss");
+        timeStamp = simpleDateFormat.format(date);
+
 
         progressDialog2nd=new ProgressDialog(UploadPostActivity.this);
         // Creating intent.
@@ -114,6 +143,7 @@ public class UploadPostActivity extends AppCompatActivity {
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                confirm.setEnabled(false);
                 if(isChooseImage)
                 UploadImageFileToFirebaseStorage();
                 else{
@@ -143,40 +173,43 @@ public class UploadPostActivity extends AppCompatActivity {
             if(data.getClipData()!=null){
                 isChooseImage=true;
                 int totalItemSelected=data.getClipData().getItemCount();
+                ArrayList<Bitmap> lstBitMap=new ArrayList<>();
                 for (int i=0; i<totalItemSelected;i++){
                     Uri uri=data.getClipData().getItemAt(i).getUri();
                     LFilePathUri.add(uri);
+                    try {
 
+                        // Getting selected image into Bitmap.
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), LFilePathUri.get(i));
+
+                        // Setting up bitmap selected image into ImageView.
+                        lstBitMap.add(bitmap);
+
+                        // After selecting image change choose button above text.
+
+
+                    } catch (IOException e) {
+
+                        e.printStackTrace();
+                    }
                 }
-                try {
-
-                    // Getting selected image into Bitmap.
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), LFilePathUri.get(0));
-
-                    // Setting up bitmap selected image into ImageView.
-                    imagePost.setImageBitmap(bitmap);
-
-                    // After selecting image change choose button above text.
-
-
-                } catch (IOException e) {
-
-                    e.printStackTrace();
-                }
+                recyclerView.setLayoutManager(new GridLayoutManager(UploadPostActivity.this, 3));
+                UpLoadPostAdapter upLoadPostAdapter=new UpLoadPostAdapter(UploadPostActivity.this,lstBitMap,LFilePathUri);
+                recyclerView.setAdapter(upLoadPostAdapter);
             }
 
             else if (data.getData() != null) {
-
-                FilePathUri = data.getData();
-
+                FilePathUri=new ArrayList<>();
+                FilePathUri.add(data.getData());
+                ArrayList<Bitmap> lstBitMap=new ArrayList<>();
                 try {
 
                     // Getting selected image into Bitmap.
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), FilePathUri);
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), FilePathUri.get(0));
 
                     // Setting up bitmap selected image into ImageView.
                     imagePost.setImageBitmap(bitmap);
-
+                    lstBitMap.add(bitmap);
                     // After selecting image change choose button above text.
 
 
@@ -184,6 +217,9 @@ public class UploadPostActivity extends AppCompatActivity {
 
                     e.printStackTrace();
                 }
+                recyclerView.setLayoutManager(new GridLayoutManager(UploadPostActivity.this, 3));
+                UpLoadPostAdapter upLoadPostAdapter=new UpLoadPostAdapter(UploadPostActivity.this,lstBitMap,FilePathUri);
+                recyclerView.setAdapter(upLoadPostAdapter);
             }
 
         }
@@ -195,7 +231,7 @@ public class UploadPostActivity extends AppCompatActivity {
     }
 
     // Creating Method to get the selected image file Extension from File Path URI.
-    public String GetFileExtension(Uri uri) {
+    /*public String GetFileExtension(Uri uri) {
 
         ContentResolver contentResolver = getContentResolver();
 
@@ -204,25 +240,26 @@ public class UploadPostActivity extends AppCompatActivity {
         // Returning the file Extension.
         return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri)) ;
 
-    }
+    }*/
 
     // Creating UploadImageFileToFirebaseStorage method to upload image on storage.
     public void UploadImageFileToFirebaseStorage() {
 
         // Checking whether FilePathUri Is empty or not.
         if (FilePathUri != null) {
+            progressBar.setMax(100);
 
             // Setting progressDialog Title.
-            progressDialog.setTitle("Image is Uploading...");
+
 
             // Showing progressDialog.
           //  progressDialog.show();
 
             // Creating second StorageReference.
-            StorageReference storageReference2nd = storageReference.child(Storage_Path + System.currentTimeMillis() + "." + GetFileExtension(FilePathUri));
+            StorageReference storageReference2nd = storageReference.child(Storage_Path + System.currentTimeMillis() + ".png");
 
             // Adding addOnSuccessListener to second StorageReference.
-            storageReference2nd.putFile(FilePathUri)
+            storageReference2nd.putFile(FilePathUri.get(0))
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -283,19 +320,24 @@ public class UploadPostActivity extends AppCompatActivity {
                         @Override
                         public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                             double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                            progressBar.setProgress((int)progress);
                             // Setting progressDialog Title.
                            // progressDialog.setTitle("Image is Uploading...");
-                            progressDialog.setTitle("Upload photo is "+progress+" % done");
+
                             if(progress==100){
                                 databaseReference4th.child(postID).setValue("Like of this post");
                                 databaseReference4th.child(postID).addValueEventListener(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
-                                        PostInfo postInfo = new PostInfo(postID, userId, String.valueOf(dataSnapshot.getChildrenCount()), Caption.getText().toString());
+
+                                        PostInfo postInfo = new PostInfo(postID, userId, String.valueOf(dataSnapshot.getChildrenCount()), Caption.getText().toString(),timeStamp);
                                         databaseReference2nd.child(postID).setValue(postInfo);
+                                        for (int i=0;i<lstIdFollower.size();i++){
+                                            databaseReference6th.child(lstIdFollower.get(i)).child(postID).setValue(postInfo);
+                                        }
                                         Intent intent = new Intent(UploadPostActivity.this, ViewPostActivity.class);
                                         intent.putExtra("postID",postID);
-                                        intent.putExtra("Caption",Caption.getText().toString());
+                                        //intent.putExtra("Caption",Caption.getText().toString());
 
                                         startActivity(intent);
                                     }
@@ -311,10 +353,10 @@ public class UploadPostActivity extends AppCompatActivity {
                     });
         }
         else if(LFilePathUri!=null){
-
+            progressBar.setMax(100*LFilePathUri.size());
 
             for(int i=0;i<LFilePathUri.size();i++) {
-                StorageReference storageReference2nd = storageReference.child(Storage_Path + System.currentTimeMillis() + "." + GetFileExtension(LFilePathUri.get(i)));
+                StorageReference storageReference2nd = storageReference.child(Storage_Path + System.currentTimeMillis() + "." +"png");
                 // Adding addOnSuccessListener to second StorageReference.
 
                 final int finalI = i;
@@ -358,7 +400,7 @@ public class UploadPostActivity extends AppCompatActivity {
                                 databaseReference4th.child(postID).addValueEventListener(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
-                                        PostInfo postInfo = new PostInfo(postID, userId, String.valueOf(dataSnapshot.getChildrenCount()), Caption.getText().toString());
+                                        PostInfo postInfo = new PostInfo(postID, userId, String.valueOf(dataSnapshot.getChildrenCount()), Caption.getText().toString(),timeStamp);
                                         databaseReference2nd.child(postID).setValue(postInfo);
                                     }
 
@@ -394,18 +436,22 @@ public class UploadPostActivity extends AppCompatActivity {
                                 double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
                                 // Setting progressDialog Title.
                                // int count=i;
-                                progressDialog.setTitle("Upload photo is "+progress+" % done");
+                                progressBar.setProgress(progressBar.getProgress()+(int)progress);
+
                                 if(progress==100 &&finalI==LFilePathUri.size()-1){
-                                    progressDialog.dismiss();
+
                                     databaseReference4th.child(postID).setValue("Like of this post");
                                     databaseReference4th.child(postID).addValueEventListener(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(DataSnapshot dataSnapshot) {
-                                            PostInfo postInfo = new PostInfo(postID, userId, String.valueOf(dataSnapshot.getChildrenCount()), Caption.getText().toString());
+                                            PostInfo postInfo = new PostInfo(postID, userId, String.valueOf(dataSnapshot.getChildrenCount()), Caption.getText().toString(),timeStamp);
                                             databaseReference2nd.child(postID).setValue(postInfo);
+                                            for (int i=0;i<lstIdFollower.size();i++){
+                                                databaseReference6th.child(lstIdFollower.get(i)).child(postID).setValue(postInfo);
+                                            }
                                             Intent intent = new Intent(UploadPostActivity.this, ViewPostActivity.class);
                                             intent.putExtra("postID",postID);
-                                            intent.putExtra("Caption",Caption.getText().toString());
+                                            //intent.putExtra("Caption",Caption.getText().toString());
 
                                             startActivity(intent);
                                         }
@@ -427,6 +473,23 @@ public class UploadPostActivity extends AppCompatActivity {
             Toast.makeText(UploadPostActivity.this, "Please Select Image or Add Image Name", Toast.LENGTH_LONG).show();
 
         }
+    }
+
+    private void getListOfFollower(){
+        databaseReference5th.child(userId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot singleSnapshot:dataSnapshot.getChildren()){
+                    lstIdFollower.add(singleSnapshot.getKey());
+                }
+                lstIdFollower.add(userId);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
 

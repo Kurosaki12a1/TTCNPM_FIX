@@ -35,29 +35,38 @@ import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Created by Welcome on 3/21/2018.
  */
 
-public class EditProfileActivity extends AppCompatActivity {
+public class
+EditProfileActivity extends AppCompatActivity {
 
         private EditText userName,displayName,website,phoneNumber,email,description;
         private TextView changePhoto;
 
         private DatabaseReference databaseReference;
         private DatabaseReference databaseReference2nd;
+    private DatabaseReference databaseReference3rd;
+    private DatabaseReference databaseReference4th;
         private FirebaseAuth mAuth;
         private String imageUrl="";
         StorageReference storageReference;
 
 
 
-        private ImageView backArrow,saveChanges,profilePhoto;
+        private ImageView backArrow, saveChanges, profilePhoto;
         public static final String Database_Path = "All_User_Info_Database";
         public static final String Post_Path="All_Post_Info_Database";
         public static final String Image_Post="Image_Of_Post_Database";
-        public static final String Liked_Path="All_Liked_Post_Database";
+      //  public static final String Liked_Path="All_Liked_Post_Database";
+        public static final String Follower_Path="All_Follower_User_Database";
+        public static final String NewFeed_Path="All_New_Feed_Database";
         int Image_Request_Code = 7;
 
          // Creating URI.
@@ -67,6 +76,8 @@ public class EditProfileActivity extends AppCompatActivity {
 
         ProgressDialog progressDialog ;
         ProgressDialog progressDialog2nd ;
+    ArrayList<String> lstIdFollower=new ArrayList<>();
+        String postId="";
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_edit_profile);
@@ -91,7 +102,7 @@ public class EditProfileActivity extends AppCompatActivity {
             //getUserID
             mAuth = FirebaseAuth.getInstance();
             String userId = mAuth.getCurrentUser().getUid().toString();
-
+            getListOfFollower(userId);
             //create code
 
             storageReference = FirebaseStorage.getInstance().getReference();
@@ -228,18 +239,24 @@ public class EditProfileActivity extends AppCompatActivity {
                             imageUrl = taskSnapshot.getDownloadUrl().toString();
                             DatabaseReference databaseReference2=FirebaseDatabase.getInstance().getReference(Post_Path);
                             DatabaseReference databaseReference3=FirebaseDatabase.getInstance().getReference(Image_Post);
-                            String postId=databaseReference2.push().getKey();
+                            postId=databaseReference2.push().getKey();
                             // @SuppressWarnings("VisibleForTests")
                             ImageUploadInfo imageUploadInfo = new ImageUploadInfo(taskSnapshot.getDownloadUrl().toString(), 0, "", userId,postId);
-                            databaseReference3.child(postId).setValue(imageUploadInfo);
-                            databaseReference2.child(postId).setValue(new PostInfo(postId,userId,"0",displayName.getText().toString() + " had changed avatar profile"));
+                            databaseReference3.child(postId).child(ImageUploadId).setValue(imageUploadInfo);
+                            Date date = Calendar.getInstance().getTime();
+                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd/ HH:mm:ss");
+                            String timeStamp = simpleDateFormat.format(date);
+                            databaseReference2.child(postId).setValue(new PostInfo(postId,userId,"0",displayName.getText().toString() + " had changed avatar profile",timeStamp));
                             // Getting image upload ID.
                             //String ImageUploadId = databaseReference.push().getKey();
 
                             // Adding image upload id s child element into databaseReference.
                             databaseReference2nd.child(ImageUploadId).setValue(imageUploadInfo);
 
-
+                            databaseReference4th=FirebaseDatabase.getInstance().getReference(NewFeed_Path);
+                            for(int i=0;i<lstIdFollower.size();i++){
+                                databaseReference4th.child(lstIdFollower.get(i)).child(postId).setValue(new PostInfo(postId,userId,"0",displayName.getText().toString() + " had changed avatar profile",timeStamp));
+                            }
                             //update database user
                             UserInfo userInfo = new UserInfo(email.getText().toString(), displayName.getText().toString(), imageUrl,
                                     description.getText().toString(), website.getText().toString(), phoneNumber.getText().toString());
@@ -269,6 +286,7 @@ public class EditProfileActivity extends AppCompatActivity {
                             progressDialog.setTitle("Profile is updating...");
                             Toast.makeText(EditProfileActivity.this,"Your profile done " +  progress +"%",Toast.LENGTH_SHORT).show();
                             if(progress>=100){
+
                                 Intent intent = new Intent(EditProfileActivity.this, ViewSelfProfile.class);
                                 startActivity(intent);
                             }
@@ -281,6 +299,23 @@ public class EditProfileActivity extends AppCompatActivity {
             Toast.makeText(EditProfileActivity.this, "Please Select Image or Add Image Name", Toast.LENGTH_LONG).show();
 
         }
+    }
+    private void getListOfFollower(final String userId){
+            databaseReference3rd=FirebaseDatabase.getInstance().getReference(Follower_Path);
+        databaseReference3rd.child(userId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot singleSnapshot:dataSnapshot.getChildren()){
+                    lstIdFollower.add(singleSnapshot.getKey());
+                }
+                lstIdFollower.add(userId);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
 }
